@@ -18,6 +18,6 @@ for the_line in lines:
     position = the_line.find("GGGAAC")
     if position != -1:
         print ("Sample: " + str(i) + "\tPosition:"+ str(position - colon_position - 1))
-        print ("Sequence after: " + the_line[position::])
+        print ("Sequence after: " + the_line[position + 6::])
     i += 1
     
