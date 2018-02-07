@@ -24,7 +24,7 @@ class MatchRecord :
         self.match_pos = new_pos
         self.strand = new_strand
         self.upstream_str = new_upstream
-
+        
     # print values
     def printValues(self) :
         print("ID: " + self.id_str)
@@ -46,65 +46,75 @@ class MatchRecord :
         csv_str += self.upstream_str
         return csv_str
 
-# open and initialize sequence file
-handle = open("seqs.fa", "r")
-handle = handle.read()
-handle = io.StringIO(handle)
 
-# parse sequences in 'fasta' format; this returns an iterator, which stores
-# a sequence of elements
-sequences = SeqIO.parse(handle, "fasta")
+# get matches between target sequences and sequences from a file that are
+# in fasta format
+def getHits(target_seq, file) :
 
-# each sequence is stored as a SeqRecord object
-# http://biopython.org/DIST/docs/tutorial/Tutorial.html#sec:seq_features
+    # parse sequences in 'fasta' format; this returns an iterator, which stores
+    # a sequence of elements
+    sequences = SeqIO.parse(file, 'fasta')
 
-# EL 3, 1, 2 SEQ: AATTGAGGTGGATCGGTGGATCGGTGGATCAGTTCATTTCGGAACTGAAATGAGCCGTGTCCGAGGTGAGTCCGGAAATGGGCTCAAAACTGCGGTGAAACCACTGACATCCGGACAGCGTTGCGACAGTGGCGCTTTTAGCGCAGCCCGGGGGTTTTTACAGGATACC
+    records = list()    # stores our MatchRecord objects (sequence matches)
 
-num = 1
-target_seq = "AATTGAGGTGGATCGGTGGATCGGTGGATCAGTTCATTTCGGAACTGAAATGAGCCGTGTCCGAGGTGAGTCCGGAAATGGGCTCAAAACTGCGGTGAAACCACTGACATCCGGACAGCGTTGCGACAGTGGCGCTTTTAGCGCAGCCCGGGGGTTTTTACAGGATACC"
-target_seq_len = len(target_seq)
+    target_seq_len = len(target_seq)
 
-records = list()    # stores our MatchRecord objects (sequence matches)
-
-# loop through sequence records in the file
-for s in sequences:
+    # loop through sequence records in the file
+    for s in sequences:
     
-    if len(s) < target_seq_len :
-        continue
+        if len(s) < target_seq_len:    
+            continue
 
-    # look for a match in the original version of this sequence
-    hit_pos = s.seq.find(target_seq)
-    if (hit_pos != -1) :    # match found, record it
-        upstream = ""
-        if hit_pos + target_seq_len + 200 < len(s.seq):
-            upstream = s.seq[hit_pos + target_seq_len + 200::]
-        records.append(MatchRecord(s.id, hit_pos, 0, str(upstream)))
+        # look for a match in the original version of this sequence
+        hit_pos = s.seq.find(target_seq)
+        if (hit_pos != -1) :    # match found, record it
+            upstream = ""
+            if hit_pos + target_seq_len + 200 < len(s.seq):
+                upstream = s.seq[hit_pos + target_seq_len + 200::]
+                records.append(MatchRecord(s.id, hit_pos, 0, str(upstream)))
 
-    # look for a match in the reverse complement of this sequence
-    rev_comp = s.seq.reverse_complement()
-    hit_pos = rev_comp.find(target_seq)
-    if (hit_pos != -1) :
-        upstream = ""
-        if hit_pos + target_seq_len + 200 < len(s.seq):
-            upstream = s.seq[hit_pos + target_seq_len + 200::]
-        records.append(MatchRecord(s.id, hit_pos, 1, str(upstream)))    
-        
-    #num = num + 1
-    #if num == 4 :
-        #break
+        # look for a match in the reverse complement of this sequence
+        rev_comp = s.seq.reverse_complement()
+        hit_pos = rev_comp.find(target_seq)
+        if (hit_pos != -1) :    
+            upstream = ""
+            if hit_pos + target_seq_len + 200 < len(s.seq):
+                upstream = s.seq[hit_pos + target_seq_len + 200::]
+                records.append(MatchRecord(s.id, hit_pos, 1, str(upstream)))
+    print("# matches found:", len(records))
+    return records                
 
-for r in records :
-    r.printValues()
+
+def outputRecords(records, file = None) :
+    if file == None :
+        for r in records :
+            r.printValues()        
+    else :
+        # output matches to CSV file
+        outfile = open(file,"w")
+        outfile.write("ID,POSITION,STRAND,UPSTREAM\n")
+        for r in records :
+            outfile.write(r.getCSV() + "\n")
+        outfile.close();
+
+el1 = "ccgaggtgagtccggaaatgggctcaaaactgcggtgaaacc".upper()
+el2 = "actgacatccggacagcgttgcgacagtggcgcttttagcgcagcccgggggtttttacaggatacc".upper()        
+el3 = "gtggcgcttttagcgcagcccgggggtttttacaggatacca".upper()
+el321 = "AATTGAGGTGGATCGGTGGATCGGTGGATCAGTTCATTTCGGAACTGAAATGAGCCGTGTCCGAGGTGAGTCCGGAAATGGGCTCAAAACTGCGGTGAAACCACTGACATCCGGACAGCGTTGCGACAGTGGCGCTTTTAGCGCAGCCCGGGGGTTTTTACAGGATACC"
+
+res1 = getHits(el1, "seqs.fa")
+outputRecords(res1, "el1_results.csv")
+
+res2 = getHits(el2, "seqs.fa")
+outputRecords(res2, "el2_results.csv")
+
+res3 = getHits(el3, "seqs.fa")
+outputRecords(res3, "el3_results.csv")
+
+res321 = getHits(el321, "seqs.fa")
+outputRecords(res321, "el321_results.csv")
+
+
+
+
     
-print("TOTAL MATCHES: " + str(len(records)))
-
-print("WRITING TO CSV FILE...")
-
-# output matches to CSV file
-outfile = open("direct_matches.csv","w")
-outfile.write("ID,POSITION,STRAND,UPSTREAM\n")
-for r in records :
-    outfile.write(r.getCSV() + "\n")
-outfile.close();
-
-print("DONE")
