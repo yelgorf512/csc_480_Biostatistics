@@ -126,7 +126,7 @@ def getAlignments(target_seq, rc_target_seq, file) :
     # a sequence of elements
     sequences = SeqIO.parse(file, 'fasta')
 
-    records = list()    # stores our AlignmentRecord objects (sequence matches)
+    records = list()    # stores our AlignmentRecord objects (alignment scores)
 
     target_seq_len = len(target_seq)
 
@@ -134,14 +134,15 @@ def getAlignments(target_seq, rc_target_seq, file) :
     counter = 1
     for s in sequences:
     
-        if len(s) < target_seq_len:    
+        if len(s) < target_seq_len:
+            print("length skip")
             continue
 
         # get alignment for the original version of this sequence
-        if counter % 100 == 0 :
+        if counter % 20 == 0 :
             print ("GETTING ALIGNMENT FOR SEQ " + str(counter) + "...")
 
-        alignments = pairwise2.align.globalms(target_seq, s, 2,-1, -2, -1, 
+        alignments = pairwise2.align.globalms(target_seq, s.seq, 2,-1, -2, -1, 
                                       penalize_end_gaps = (False, True))
 
         the_record = AlignmentRecord(s.id, alignments[0][2], 0)
@@ -149,7 +150,7 @@ def getAlignments(target_seq, rc_target_seq, file) :
         records.append(the_record)
 
         # get alignment for the reverse complement of this sequence
-        alignments = pairwise2.align.globalms(rc_target_seq, s, 2,-1, -2, -1, 
+        alignments = pairwise2.align.globalms(rc_target_seq, s.seq, 2,-1, -2, -1, 
                                       penalize_end_gaps = (False, True))
 
         the_record = AlignmentRecord(s.id, alignments[0][2], 1)
@@ -197,6 +198,14 @@ rc_el321 = Seq(el321).reverse_complement()
 
 alignments = getAlignments(el321, rc_el321, "seqs.fa")
 outputRecords(alignments, "el312_alignment_results.csv", True)
+
+#alignments = pairwise2.align.globalms(the_target, contig_1810, 2,-1, -2, -1, 
+#                                      penalize_end_gaps = (False, True))
+
+#print("Optimal alignment has score of: " + str(alignments[0][2]) + "\n")
+#print("Optimal alignments are below: ")
+#for a in alignments:
+#    print(format_alignment(*a))
 
 
     
