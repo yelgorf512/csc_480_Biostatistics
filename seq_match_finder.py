@@ -143,17 +143,19 @@ def getAlignments(target_seq, rc_target_seq, file) :
             print ("GETTING ALIGNMENT FOR SEQ " + str(counter) + "...")
 
         alignments = pairwise2.align.globalms(target_seq, s.seq, 2,-1, -2, -1, 
-                                      penalize_end_gaps = (False, True))
+                                      penalize_end_gaps = (False, True),
+                                      score_only = True)
 
-        the_record = AlignmentRecord(s.id, alignments[0][2], 0)
+        the_record = AlignmentRecord(s.id, alignments, 0)
         #the_record.printValues()
         records.append(the_record)
 
         # get alignment for the reverse complement of this sequence
         alignments = pairwise2.align.globalms(rc_target_seq, s.seq, 2,-1, -2, -1, 
-                                      penalize_end_gaps = (False, True))
+                                      penalize_end_gaps = (False, True),
+                                      score_only = True)
 
-        the_record = AlignmentRecord(s.id, alignments[0][2], 1)
+        the_record = AlignmentRecord(s.id, alignments, 1)
         #the_record.printValues()
         records.append(the_record)
         
