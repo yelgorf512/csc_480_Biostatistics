@@ -12,6 +12,7 @@ from Bio import pairwise2
 from Bio.pairwise2 import format_alignment
 
 import io # to convert string to 'handle'
+import sys
 
 # this class stores info about a match we find and allows for it to be
 # printed or returned as a CSV row string
@@ -179,27 +180,38 @@ def outputRecords(records, file = None, alignments = False) :
             outfile.write(r.getCSV() + "\n")
         outfile.close();
 
-el1 = "ccgaggtgagtccggaaatgggctcaaaactgcggtgaaacc".upper()
-el2 = "actgacatccggacagcgttgcgacagtggcgcttttagcgcagcccgggggtttttacaggatacc".upper()        
-el3 = "gtggcgcttttagcgcagcccgggggtttttacaggatacca".upper()
-el321 = "AATTGAGGTGGATCGGTGGATCGGTGGATCAGTTCATTTCGGAACTGAAATGAGCCGTGTCCGAGGTGAGTCCGGAAATGGGCTCAAAACTGCGGTGAAACCACTGACATCCGGACAGCGTTGCGACAGTGGCGCTTTTAGCGCAGCCCGGGGGTTTTTACAGGATACC"
+seq_dict = {}
 
-rc_el321 = Seq(el321).reverse_complement()
+seq_dict['el1'] = "ccgaggtgagtccggaaatgggctcaaaactgcggtgaaacc".upper()
+seq_dict['el2'] = "actgacatccggacagcgttgcgacagtggcgcttttagcgcagcccgggggtttttacaggatacc".upper()        
+seq_dict['el3'] = "gtggcgcttttagcgcagcccgggggtttttacaggatacca".upper()
+seq_dict['el312'] = "AATTGAGGTGGATCGGTGGATCGGTGGATCAGTTCATTTCGGAACTGAAATGAGCCGTGTCCGAGGTGAGTCCGGAAATGGGCTCAAAACTGCGGTGAAACCACTGACATCCGGACAGCGTTGCGACAGTGGCGCTTTTAGCGCAGCCCGGGGGTTTTTACAGGATACC"
 
-#res1 = getHits(el1, "seqs.fa")
+seq_dict['rc_el1'] = Seq(seq_dict['el1']).reverse_complement()
+seq_dict['rc_el2'] = Seq(seq_dict['el2']).reverse_complement()
+seq_dict['rc_el3'] = Seq(seq_dict['el3']).reverse_complement()
+seq_dict['rc_el312'] = Seq(seq_dict['el312']).reverse_complement()
+
+#res1 = getHits(seq_dict['el1'], "seqs.fa")
 #outputRecords(res1, "el1_results.csv")
 
-#res2 = getHits(el2, "seqs.fa")
+#res2 = getHits(seq_dict['el2'], "seqs.fa")
 #outputRecords(res2, "el2_results.csv")
 
-#res3 = getHits(el3, "seqs.fa")
+#res3 = getHits(seq_dict['el3'], "seqs.fa")
 #outputRecords(res3, "el3_results.csv")
 
-#res321 = getHits(el321, "seqs.fa")
-#outputRecords(res321, "el321_results.csv")
+#res321 = getHits(seq_dict['el312'], "seqs.fa")
+#outputRecords(res312, "el312_results.csv")
 
-alignments = getAlignments(el321, rc_el321, "seqs.fa")
-outputRecords(alignments, "el312_alignment_results.csv", True)
+if len(sys.argv) == 4 :
+    print("Running with provided args")
+    alignments = getAlignments(seq_dict[sys.argv[2]], seq_dict['rc_' + sys.argv[2]], sys.argv[1])
+    outputRecords(alignments, sys.argv[3], True)
+else:
+    print("Missing args (FASTA file, contig name, output file), running with hardcoded values")
+    alignments = getAlignments(seq_dict['el312'], seq_dict['rc_el312'], "seqs.fa")
+    outputRecords(alignments, "el312_alignment_results.csv", True)
 
 #alignments = pairwise2.align.globalms(the_target, contig_1810, 2,-1, -2, -1, 
 #                                      penalize_end_gaps = (False, True))
