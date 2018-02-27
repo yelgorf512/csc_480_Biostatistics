@@ -29,6 +29,7 @@ class MatchRecord :
         self.match_pos = new_pos
         self.strand = new_strand
         self.upstream_str = new_upstream
+        self.upstream_len = len(self.upstream_str)
         
     # print values
     def printValues(self) :
@@ -38,7 +39,9 @@ class MatchRecord :
             print("FOUND IN ORIGINAL")
         else :
             print("FOUND IN REVERSE COMPLEMENT")
+        print("UPST LENGTH: " + self.upstream_len)
         print("UPSTREAM (first 100bp): " + self.upstream_str[:100:])
+        
 
     # return values as CSV row
     def getCSV(self) :
@@ -48,6 +51,7 @@ class MatchRecord :
             csv_str += "ORIGINAL" + ","
         else :
             csv_str += "REVERSE COMPLEMENT" + ","
+        csv_str += str(self.upstream_len) + ","
         csv_str += self.upstream_str
         return csv_str
 
@@ -107,7 +111,7 @@ def getHits(target_seq, file) :
             upstream = ""
             if hit_pos + target_seq_len + 200 < len(s.seq):
                 upstream = s.seq[hit_pos + target_seq_len + 200::]
-                records.append(MatchRecord(s.id, hit_pos, 0, str(upstream)))
+            records.append(MatchRecord(s.id, hit_pos, 0, str(upstream)))
 
         # look for a match in the reverse complement of this sequence
         rev_comp = s.seq.reverse_complement()
@@ -116,7 +120,7 @@ def getHits(target_seq, file) :
             upstream = ""
             if hit_pos + target_seq_len + 200 < len(s.seq):
                 upstream = s.seq[hit_pos + target_seq_len + 200::]
-                records.append(MatchRecord(s.id, hit_pos, 1, str(upstream)))
+            records.append(MatchRecord(s.id, hit_pos, 1, str(upstream)))
     print("# matches found:", len(records))
     return records                
 
@@ -173,7 +177,7 @@ def outputRecords(records, file = None, alignments = False) :
         # output matches to CSV file
         outfile = open(file,"w")
         if (alignments == False) :
-            outfile.write("ID,POSITION,STRAND,UPSTREAM\n")
+            outfile.write("ID,POSITION,STRAND,UPST LENGTH,UPSTREAM\n")
         else :
             outfile.write("ID,SCORE,STRAND\n")
         for r in records :
@@ -206,13 +210,17 @@ seq_dict['rc_el312'] = Seq(seq_dict['el312']).reverse_complement()
 
 if len(sys.argv) == 4 :
     print("Running with provided args")
-    alignments = getAlignments(seq_dict[sys.argv[2]], seq_dict['rc_' + sys.argv[2]], sys.argv[1])
-    outputRecords(alignments, sys.argv[3], True)
+    #alignments = getAlignments(seq_dict[sys.argv[2]], seq_dict['rc_' + sys.argv[2]], sys.argv[1])
+    #outputRecords(alignments, sys.argv[3], True)
+    hits = getHits(seq_dict[sys.argv[2]], sys.argv[1])
+    outputRecords(hits, sys.argv[3], True)
 else:
     print("Missing args (FASTA file, contig name, output file), running with hardcoded values")
-    alignments = getAlignments(seq_dict['el312'], seq_dict['rc_el312'], "seqs.fa")
-    outputRecords(alignments, "el312_alignment_results.csv", True)
-
+    #alignments = getAlignments(seq_dict['el312'], seq_dict['rc_el312'], "seqs.fa")
+    #outputRecords(alignments, "el312_alignment_results.csv", True)
+    hits = getHits(seq_dict['el312'], "seqs_4.fa")
+    outputRecords(hits, "direct_matches.csv", False)
+                   
 #alignments = pairwise2.align.globalms(the_target, contig_1810, 2,-1, -2, -1, 
 #                                      penalize_end_gaps = (False, True))
 
