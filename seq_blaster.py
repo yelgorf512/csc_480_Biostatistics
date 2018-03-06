@@ -4,9 +4,20 @@ from Bio.Blast import NCBIXML
 
 import sys
 
+# Assignment #2:
 
-# reads in a results file from the seq_match_finder script, and for each sequence, 
-# finds the top BLAST hit, and adds information about that hit to the original results file.
+# write a script that reads in a results file from the
+# match script, and for each sequence, finds the top BLAST hit.
+
+# Create a new file that copies the original input file and adds the
+# following columns: the definition (.hit_def).
+
+# Then for the first high-scoring pair (from topHit.hsps), get the alignment
+# length and the percent identity (the number of identities / the alignment
+# length).
+
+# This script should take two arguments – the input file name and
+# output file name. An example BLAST script is below:
 
 def get_csv_lines(data_file):
     infile = open(data_file)
@@ -26,15 +37,25 @@ def output_csv_lines(csv_lines, file = None) :
             outfile.write(csv_line + "\n")
         outfile.close();
 
-if len(sys.argv) == 3 :
+seq_len_cutoff = -1 # if this gets set to something else later sequence will cutoff at this index
+
+if len(sys.argv) == 4 :
     print("Running with provided args")
     input_file = sys.argv[1]
     output_file = sys.argv[2]
-else:
-    print("Missing args (input file, output file), running with hardcoded values")
-    input_file = "direct_matches.csv"
-    output_file = "blast_results_4.csv"
+    if sys.argv[3] != "ALL":
+        seq_len_cutoff = int(sys.argv[3])
 
+elif len(sys.argv) == 3 :
+    print("Running with provided args")
+    input_file = sys.argv[1]
+    output_file = sys.argv[2]
+    
+else:
+    print("Missing args (input file, output file, [seq len cutoff]), running with hardcoded values")
+    input_file = "direct_matches.csv"
+    output_file = "blast_results_2_redo.csv"
+    #seq_len_cutoff = 15000
 
 seq_lines = get_csv_lines(input_file)
 print("GOT SEQ LINES")
@@ -43,13 +64,17 @@ seq_list = list()
 
 skip = 1
 counter = 0
-limit = -2  
+limit = -1  
 
 for the_line in seq_lines:
     comma_split_line = the_line.split(",")
     if counter >= skip and len(comma_split_line) == 5 :
-        print('Adding sequence ' + str(counter))
-        seq_list.append(comma_split_line[4])
+        if seq_len_cutoff != -1 and len(the_line) > seq_len_cutoff:
+            print('Adding sequence (cutoff)' + str(counter))
+            seq_list.append(comma_split_line[4][0:seq_len_cutoff:])
+        else: 
+            print('Adding sequence ' + str(counter))
+            seq_list.append(comma_split_line[4])
     else :
         seq_list.append("")
     counter += 1
@@ -83,7 +108,17 @@ for seq in seq_list :
         # look at first high scoring pair (hsp)
         hsp = topHit.hsps[0]
 
-        new_csv_line = seq_lines[counter] + ","
+        new_csv_line = ""
+
+        comma_split_line = seq_lines[counter].split(",")
+        cell_counter = 0
+        for cell in comma_split_line:
+            if (cell_counter == 4 and seq_len_cutoff != -1):
+                new_csv_line += comma_split_line[cell_counter][0:seq_len_cutoff:] + ","
+            else:        
+                new_csv_line += comma_split_line[cell_counter] + ","
+            cell_counter += 1
+            
         new_csv_line += topHit.hit_def.replace(",", "|") + ","
         new_csv_line += str(hsp.align_length) + ","
         new_csv_line += str(hsp.identities/hsp.align_length * 100) + ","
