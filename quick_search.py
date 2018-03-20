@@ -1,15 +1,27 @@
 from Bio import SeqIO # to parse sequence data
 from Bio.Seq import Seq
+import sys
 
-sequences = SeqIO.parse("Vi40b.fa", 'fasta')
+if len(sys.argv) != 2 :
+    raise Exception("Usage: python quick_search contigs.fa")
+
+file = sys.argv[1]
+
+print("Argument is:", sys.argv[1], file = sys.stderr)
+
+sequences = SeqIO.parse(file, 'fasta')
 
 target  = Seq("AATTGAGGTGGATCGGTGGATCGGTGGATCAGTTCATTTCGGAACTGAAATGAGCCGTGTCCGAGGTGAGTCCGGAAATGGGCTCAAAACTGCGGTGAAACCACTGACATCCGGACAGCGTTGCGACAGTGGCGCTTTTAGCGCAGCCCGGGGGTTTTTACAGGATACC")
 
 rc = target.reverse_complement()
 
 for s in sequences :
-    if target in s.seq :
-        print(s.id)
+
+    if ("3329" in s.id) :
+        print(">", s.id, sep = "")
+        print(s.seq)
+    #if target in s.seq :
+    #    print(s.id)
        # print(s.seq)
        # exit(-1)
     #if rc in s.seq :
