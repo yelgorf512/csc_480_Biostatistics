@@ -53,6 +53,7 @@ elif len(sys.argv) == 3 :
     
 else:
     print("Missing args (input file, output file, [seq len cutoff]), running with hardcoded values")
+    exit(-1)
     input_file = "direct_matches.csv"
     output_file = "blast_results_2_redo.csv"
     #seq_len_cutoff = 15000
