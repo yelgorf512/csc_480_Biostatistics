@@ -7,6 +7,7 @@
 
 from Bio import SeqIO # to parse sequence data
 from Bio.Seq import Seq
+import sys
 
 
 # this class stores info about a match we find and allows for it to be
@@ -143,6 +144,15 @@ seq_dict['el2'] = "actgacatccggacagcgttgcgacagtggcgcttttagcgcagcccgggggtttttacag
 seq_dict['el3'] = "gtggcgcttttagcgcagcccgggggtttttacaggatacca".upper()
 seq_dict['el312'] = "AATTGAGGTGGATCGGTGGATCGGTGGATCAGTTCATTTCGGAACTGAAATGAGCCGTGTCCGAGGTGAGTCCGGAAATGGGCTCAAAACTGCGGTGAAACCACTGACATCCGGACAGCGTTGCGACAGTGGCGCTTTTAGCGCAGCCCGGGGGTTTTTACAGGATACC"
 
+
+if len(sys.argv) == 4 :
+    print("Running with provided args")
+    hits = getHits(seq_dict[sys.argv[2]], sys.argv[1])
+    outputRecords(hits, sys.argv[3], True)
+else:
+    print("Missing args (FASTA file, contig name, output file), running with hardcoded values")
+    hits = getHits(seq_dict['el312'], "seqs_4.fa")
+    outputRecords(hits, "direct_matches.csv", False)
 
 
     
