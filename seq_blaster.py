@@ -3,6 +3,9 @@ from Bio import SeqIO
 from Bio.Blast import NCBIXML
 
 import sys
+import os
+
+import owcheck      # custom module
 
 # Assignment #2:
 
@@ -39,33 +42,36 @@ def output_csv_lines(csv_lines, file = None) :
 
 seq_len_cutoff = -1 # if this gets set to something else later sequence will cutoff at this index
 
-if len(sys.argv) == 4 :
+if len(sys.argv) == 3 :
     print("Running with provided args")
-    input_file = sys.argv[1]
-    output_file = sys.argv[2]
-    if sys.argv[3] != "ALL":
-        seq_len_cutoff = int(sys.argv[3])
+    input_file_path = sys.argv[1]
+    input_filename = os.path.split(sys.argv[1])[1]
+    output_filename = "blast-" + input_filename + "-" + sys.argv[2] + ".csv"        
 
-elif len(sys.argv) == 3 :
+    if sys.argv[2] != "ALL":
+        seq_len_cutoff = int(sys.argv[2])
+
+elif len(sys.argv) == 2 :
     print("Running with provided args")
-    input_file = sys.argv[1]
-    output_file = sys.argv[2]
+    input_file_path = sys.argv[1]
+    input_filename = os.path.split(sys.argv[1])[1]
+    output_filename = "blast-" + input_filename + ".csv"
     
 else:
-    print("Missing args (input file, output file, [seq len cutoff]), running with hardcoded values")
+    print("Missing args (input file, [seq len cutoff]), running with hardcoded values")
     exit(-1)
-    input_file = "direct_matches.csv"
-    output_file = "blast_results_2_redo.csv"
+    input_file_path = "direct_matches.csv"
+    output_filename = "blast_results_2_redo.csv"
     #seq_len_cutoff = 15000
 
-seq_lines = get_csv_lines(input_file)
+seq_lines = get_csv_lines(input_file_path)
 print("GOT SEQ LINES")
 
 seq_list = list()
 
 skip = 1
 counter = 0
-limit = -1  
+limit = 2  # DEBUG, SET BACK TO -1 WHEN DONE  
 
 for the_line in seq_lines:
     comma_split_line = the_line.split(",")
@@ -132,5 +138,5 @@ for seq in seq_list :
 
     counter += 1
 
-
-output_csv_lines(new_csv_lines, output_file)
+if owcheck.overwriteFile(output_filename) :
+    output_csv_lines(new_csv_lines, output_filename)
