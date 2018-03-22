@@ -8,7 +8,9 @@
 from Bio import SeqIO # to parse sequence data
 from Bio.Seq import Seq
 import sys
+import os
 
+import owcheck      # custom module
 
 # this class stores info about a match we find and allows for it to be
 # printed or returned as a CSV row string
@@ -145,14 +147,14 @@ seq_dict['el3'] = "gtggcgcttttagcgcagcccgggggtttttacaggatacca".upper()
 seq_dict['el312'] = "AATTGAGGTGGATCGGTGGATCGGTGGATCAGTTCATTTCGGAACTGAAATGAGCCGTGTCCGAGGTGAGTCCGGAAATGGGCTCAAAACTGCGGTGAAACCACTGACATCCGGACAGCGTTGCGACAGTGGCGCTTTTAGCGCAGCCCGGGGGTTTTTACAGGATACC"
 
 
-if len(sys.argv) == 4 :
+if len(sys.argv) == 3 :
     print("Running with provided args")
     hits = getHits(seq_dict[sys.argv[2]], sys.argv[1])
-    outputRecords(hits, sys.argv[3], True)
+    input_filename = os.path.split(sys.argv[1])[1]
+    output_filename = "matches-" + input_filename + "-" + sys.argv[2] + ".csv"        
+    if owcheck.overwriteFile(output_filename) :
+        outputRecords(hits, output_filename, False)
 else:
-    print("Missing args (FASTA file, contig name, output file), running with hardcoded values")
-    hits = getHits(seq_dict['el312'], "seqs_4.fa")
+    print("Missing args (FASTA file, contig name), running with hardcoded values")
+    hits = getHits(seq_dict['el312'], "seqs.fa")
     outputRecords(hits, "direct_matches.csv", False)
-
-
-    
