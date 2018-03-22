@@ -12,7 +12,9 @@ from Bio import pairwise2
 from Bio.pairwise2 import format_alignment
 
 import sys
+import os
 
+import owcheck      # custom module
 
 # this class stores info about an alignment
 class AlignmentRecord :
@@ -115,10 +117,13 @@ seq_dict['el3'] = "gtggcgcttttagcgcagcccgggggtttttacaggatacca".upper()
 seq_dict['el312'] = "AATTGAGGTGGATCGGTGGATCGGTGGATCAGTTCATTTCGGAACTGAAATGAGCCGTGTCCGAGGTGAGTCCGGAAATGGGCTCAAAACTGCGGTGAAACCACTGACATCCGGACAGCGTTGCGACAGTGGCGCTTTTAGCGCAGCCCGGGGGTTTTTACAGGATACC"
 
 
-if len(sys.argv) == 4 :
+if len(sys.argv) == 3 :
     print("Running with provided args")
-    alignments = getAlignments(seq_dict[sys.argv[2]], sys.argv[1])        
-    outputRecords(alignments, sys.argv[3], True)
+    alignments = getAlignments(seq_dict[sys.argv[2]], sys.argv[1])
+    input_filename = os.path.split(sys.argv[1])[1]
+    output_filename = "scores-" + input_filename + "-" + sys.argv[2] + ".csv"        
+    if owcheck.overwriteFile(output_filename) :
+        outputRecords(alignments, output_filename, True)
 else:
-    print("Missing args (FASTA file, contig name, output file)")
+    print("Missing args (FASTA file, contig name)")
                    
