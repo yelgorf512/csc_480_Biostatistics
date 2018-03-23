@@ -64,6 +64,8 @@ else:
     output_filename = "blast_results_2_redo.csv"
     #seq_len_cutoff = 15000
 
+owcheck.overwriteFile(output_filename)
+
 seq_lines = get_csv_lines(input_file_path)
 print("GOT SEQ LINES")
 
@@ -71,7 +73,7 @@ seq_list = list()
 
 skip = 1
 counter = 0
-limit = 2  # DEBUG, SET BACK TO -1 WHEN DONE  
+limit = -1
 
 for the_line in seq_lines:
     comma_split_line = the_line.split(",")
@@ -138,5 +140,5 @@ for seq in seq_list :
 
     counter += 1
 
-if owcheck.overwriteFile(output_filename) :
-    output_csv_lines(new_csv_lines, output_filename)
+output_csv_lines(new_csv_lines, output_filename)
+print("Your results have been saved to the following file: " + output_filename)
