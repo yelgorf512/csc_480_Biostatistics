@@ -48,8 +48,6 @@ class AlignmentRecord :
             csv_str += "REVERSE COMPLEMENT"
         return csv_str
 
-              
-
 # Get pairwise alignments with a target sequence for each sequence in a FASTA file 
 def getAlignments(target_seq, file) :
 
@@ -116,14 +114,14 @@ seq_dict['el2'] = "actgacatccggacagcgttgcgacagtggcgcttttagcgcagcccgggggtttttacag
 seq_dict['el3'] = "gtggcgcttttagcgcagcccgggggtttttacaggatacca".upper()
 seq_dict['el312'] = "AATTGAGGTGGATCGGTGGATCGGTGGATCAGTTCATTTCGGAACTGAAATGAGCCGTGTCCGAGGTGAGTCCGGAAATGGGCTCAAAACTGCGGTGAAACCACTGACATCCGGACAGCGTTGCGACAGTGGCGCTTTTAGCGCAGCCCGGGGGTTTTTACAGGATACC"
 
-
 if len(sys.argv) == 3 :
     print("Running with provided args")
-    alignments = getAlignments(seq_dict[sys.argv[2]], sys.argv[1])
     input_filename = os.path.split(sys.argv[1])[1]
-    output_filename = "scores-" + input_filename + "-" + sys.argv[2] + ".csv"        
-    if owcheck.overwriteFile(output_filename) :
-        outputRecords(alignments, output_filename, True)
+    output_filename = "scores-" + input_filename + "-" + sys.argv[2] + ".csv"
+    owcheck.overwriteFile(output_filename)
+    alignments = getAlignments(seq_dict[sys.argv[2]], sys.argv[1])
+    outputRecords(alignments, output_filename, True)
+    print("Your results have been saved to the following file: " + output_filename)
 else:
     print("Missing args (FASTA file, contig name)")
                    
