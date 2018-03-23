@@ -149,11 +149,13 @@ seq_dict['el312'] = "AATTGAGGTGGATCGGTGGATCGGTGGATCAGTTCATTTCGGAACTGAAATGAGCCGTG
 
 if len(sys.argv) == 3 :
     print("Running with provided args")
-    hits = getHits(seq_dict[sys.argv[2]], sys.argv[1])
     input_filename = os.path.split(sys.argv[1])[1]
-    output_filename = "matches-" + input_filename + "-" + sys.argv[2] + ".csv"        
-    if owcheck.overwriteFile(output_filename) :
-        outputRecords(hits, output_filename, False)
+    output_filename = "matches-" + input_filename + "-" + sys.argv[2] + ".csv"
+    owcheck.overwriteFile(output_filename)
+    hits = getHits(seq_dict[sys.argv[2]], sys.argv[1])
+    outputRecords(hits, output_filename, False)
+    print("Your results have been saved to the following file: " + output_filename)
+
 else:
     print("Missing args (FASTA file, contig name), running with hardcoded values")
     hits = getHits(seq_dict['el312'], "seqs.fa")
