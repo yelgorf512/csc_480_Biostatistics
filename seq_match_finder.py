@@ -151,8 +151,8 @@ if len(sys.argv) == 3 :
     input_filename = os.path.split(sys.argv[1])[1]
     output_filename = "matches-" + input_filename + "-" + sys.argv[2] + ".csv"
     owcheck.overwriteFile(output_filename)
-    target_seq = list(SeqIO.parse(sys.argv[2], 'fasta'))
-    hits = getHits(target_seq[0].seq, sys.argv[1])
+    target_seq = list(SeqIO.parse(sys.argv[2], 'fasta'))[0].seq
+    hits = getHits(target_seq, sys.argv[1])
     outputRecords(hits, output_filename, False)
     print("Your results have been saved to the following file: " + output_filename)
 
