@@ -119,9 +119,10 @@ if len(sys.argv) == 3 :
     input_filename = os.path.split(sys.argv[1])[1]
     output_filename = "scores-" + input_filename + "-" + sys.argv[2] + ".csv"
     owcheck.overwriteFile(output_filename)
-    alignments = getAlignments(seq_dict[sys.argv[2]], sys.argv[1])
+    target_seq = str(list(SeqIO.parse(sys.argv[2], 'fasta'))[0].seq)
+    alignments = getAlignments(target_seq, sys.argv[1])
     outputRecords(alignments, output_filename, True)
     print("Your results have been saved to the following file: " + output_filename)
 else:
-    print("Missing args (FASTA file, contig name)")
+    print("Missing args (input FASTA file, contig FASTA file)")
                    
