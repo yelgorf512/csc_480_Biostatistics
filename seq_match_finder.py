@@ -146,17 +146,17 @@ seq_dict['el2'] = "actgacatccggacagcgttgcgacagtggcgcttttagcgcagcccgggggtttttacag
 seq_dict['el3'] = "gtggcgcttttagcgcagcccgggggtttttacaggatacca".upper()
 seq_dict['el312'] = "AATTGAGGTGGATCGGTGGATCGGTGGATCAGTTCATTTCGGAACTGAAATGAGCCGTGTCCGAGGTGAGTCCGGAAATGGGCTCAAAACTGCGGTGAAACCACTGACATCCGGACAGCGTTGCGACAGTGGCGCTTTTAGCGCAGCCCGGGGGTTTTTACAGGATACC"
 
-
 if len(sys.argv) == 3 :
     print("Running with provided args")
     input_filename = os.path.split(sys.argv[1])[1]
     output_filename = "matches-" + input_filename + "-" + sys.argv[2] + ".csv"
     owcheck.overwriteFile(output_filename)
-    hits = getHits(seq_dict[sys.argv[2]], sys.argv[1])
+    target_seq = list(SeqIO.parse(sys.argv[2], 'fasta'))
+    hits = getHits(target_seq[0].seq, sys.argv[1])
     outputRecords(hits, output_filename, False)
     print("Your results have been saved to the following file: " + output_filename)
 
 else:
-    print("Missing args (FASTA file, contig name), running with hardcoded values")
+    print("Missing args (sequences FASTA file, contig FASTA file), running with hardcoded values")
     hits = getHits(seq_dict['el312'], "seqs.fa")
     outputRecords(hits, "direct_matches.csv", False)
