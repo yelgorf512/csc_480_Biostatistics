@@ -117,7 +117,8 @@ seq_dict['el312'] = "AATTGAGGTGGATCGGTGGATCGGTGGATCAGTTCATTTCGGAACTGAAATGAGCCGTG
 if len(sys.argv) == 3 :
     print("Running with provided args")
     input_filename = os.path.split(sys.argv[1])[1]
-    output_filename = "scores-" + input_filename + "-" + sys.argv[2] + ".csv"
+    seqFileName = os.path.split(sys.argv[2])[1]
+    output_filename = "scores-" + seqFileName + "-" + input_filename + ".csv"
     owcheck.overwriteFile(output_filename)
     target_seq = str(list(SeqIO.parse(sys.argv[2], 'fasta'))[0].seq)
     alignments = getAlignments(target_seq, sys.argv[1])

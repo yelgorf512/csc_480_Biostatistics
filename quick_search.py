@@ -17,7 +17,7 @@ rc = target.reverse_complement()
 
 for s in sequences :
 
-    if ("3329" in s.id) :
+    if ("18999-AE09B-Vi40b4011-GCCAAT_S3_L001_R1_001_(paired)_contig_8533" in s.id) :
         print(">", s.id, sep = "")
         print(s.seq)
     #if target in s.seq :
