@@ -41,24 +41,31 @@ def output_csv_lines(csv_lines, file = None) :
         outfile.close();
 
 seq_len_cutoff = -1 # if this gets set to something else later sequence will cutoff at this index
+use_blastx = False
 
-if len(sys.argv) == 3 :
+if len(sys.argv) == 4 :
     print("Running with provided args")
     input_file_path = sys.argv[1]
     input_filename = os.path.split(sys.argv[1])[1]
-    output_filename = "blast-" + input_filename + "-" + sys.argv[2] + ".csv"        
+    output_filename = "blast-" + input_filename + "-" + sys.argv[3] + ".csv"        
 
-    if sys.argv[2] != "ALL":
-        seq_len_cutoff = int(sys.argv[2])
+    if sys.argv[2].upper() == "BLASTX":
+        use_blastx = True
+    if sys.argv[3] != "ALL":
+        seq_len_cutoff = int(sys.argv[3])
 
-elif len(sys.argv) == 2 :
+elif len(sys.argv) == 3 :
     print("Running with provided args")
     input_file_path = sys.argv[1]
     input_filename = os.path.split(sys.argv[1])[1]
     output_filename = "blast-" + input_filename + ".csv"
-    
+
+    if sys.argv[2] == "blastx":
+        use_blastx = True
+
+
 else:
-    print("Missing args (input file, [seq len cutoff]), running with hardcoded values")
+    print("Missing args (input file, blast or blastx, [seq len cutoff]), running with hardcoded values")
     exit(-1)
     input_file_path = "direct_matches.csv"
     output_filename = "blast_results_2_redo.csv"
@@ -67,6 +74,7 @@ else:
 owcheck.overwriteFile(output_filename)
 
 seq_lines = get_csv_lines(input_file_path)
+
 print("GOT SEQ LINES")
 
 seq_list = list()
@@ -91,14 +99,17 @@ for the_line in seq_lines:
         break
 
 new_csv_lines = list()
-new_csv_lines.append("ID, POSITION, STRAND, UPST LENGTH, UPSTREAM, TOP DEFINITION, ALIGN LENGTH, PERCENT IDENTITY, Q START")
+new_csv_lines.append("ID, POSITION, STRAND, DWNSTR LENGTH, DOWNSTREAM, TOP DEFINITION, ALIGN LENGTH, PERCENT IDENTITY, Q START")
 
 counter = 0
 
 for seq in seq_list :
     if len(seq) > 0 :
         print("BLASTING SEQUENCE " + str(counter))
-        result_handle = NCBIWWW.qblast("blastn", "nt", seq)
+        if (use_blastx):
+            result_handle = NCBIWWW.qblast("blastx", "nr", seq)
+        else:
+            result_handle = NCBIWWW.qblast("blastn", "nt", seq)
         print("BLAST DONE")
 
         # save results to file
@@ -106,15 +117,25 @@ for seq in seq_list :
         file.write(result_handle.read())
         file.close()
 
+        file = open("the_seq.txt", "w")
+        file.write(seq)
+        file.close()
+
         # read in results and parse them,
         # http://biopython.org/DIST/docs/tutorial/Tutorial.html#sec:parsing-blast
         result_handle = open("blast_result_ " + str(counter) + ".xml")
-        #result_handle = open("my_blast.xml")
         blast_record = NCBIXML.read(result_handle)
 
-        topHit = blast_record.alignments[0]
+        if len(blast_record.alignments) > 0 :
+            topHit = blast_record.alignments[0]
+        else :
+            print("!!! ERROR: BLAST/BLASTX did not return any results or encountered an error. Check blast_result_" + str(counter) + ".xml for an error message.")
+            print("Exiting...")
+            exit(-1)
+        
 
         # look at first high scoring pair (hsp)
+        
         hsp = topHit.hsps[0]
 
         new_csv_line = ""
