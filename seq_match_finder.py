@@ -19,15 +19,15 @@ class MatchRecord :
     id_str = ""         # the id from the FASTA record
     match_pos = 0       # the index of the match in the sequence (starts at 0)
     strand = -1         # strand; 0 = original, 1 = reverse complement
-    upstream_str = ""   # the sequence 200 bp upstream from the match (if 200 bp upstream exists)
+    downstream_str = ""   # the sequence 200 bp downstream from the match (if 200 bp downstream exists)
 
     # set values
-    def __init__(self, new_id, new_pos, new_strand, new_upstream = "") :    
+    def __init__(self, new_id, new_pos, new_strand, new_downstream = "") :    
         self.id_str = new_id
         self.match_pos = new_pos
         self.strand = new_strand
-        self.upstream_str = new_upstream
-        self.upstream_len = len(self.upstream_str)
+        self.downstream_str = new_downstream
+        self.downstream_len = len(self.downstream_str)
         
     # print values
     def printValues(self) :
@@ -37,8 +37,8 @@ class MatchRecord :
             print("FOUND IN ORIGINAL")
         else :
             print("FOUND IN REVERSE COMPLEMENT")
-        print("UPST LENGTH: " + self.upstream_len)
-        print("UPSTREAM (first 100bp): " + self.upstream_str[:100:])
+        print("DWNSTR LENGTH: " + self.downstream_len)
+        print("DOWNSTREAM (first 100bp): " + self.downstream_str[:100:])
         
 
     # return values as CSV row
@@ -49,8 +49,8 @@ class MatchRecord :
             csv_str += "ORIGINAL" + ","
         else :
             csv_str += "REVERSE COMPLEMENT" + ","
-        csv_str += str(self.upstream_len) + ","
-        csv_str += self.upstream_str
+        csv_str += str(self.downstream_len) + ","
+        csv_str += self.downstream_str
         return csv_str
 
 # this class stores info about an alignment
@@ -106,19 +106,19 @@ def getHits(target_seq, file) :
         # look for a match in the original version of this sequence
         hit_pos = s.seq.find(target_seq)
         if (hit_pos != -1) :    # match found, record it
-            upstream = ""
+            downstream = ""
             if hit_pos + target_seq_len + 200 < len(s.seq):
-                upstream = s.seq[hit_pos + target_seq_len + 200::]
-            records.append(MatchRecord(s.id, hit_pos, 0, str(upstream)))
+                downstream = s.seq[hit_pos + target_seq_len + 200::]
+            records.append(MatchRecord(s.id, hit_pos, 0, str(downstream)))
 
         # look for a match in the reverse complement of this sequence
         rev_comp = s.seq.reverse_complement()
         hit_pos = rev_comp.find(target_seq)
         if (hit_pos != -1) :    
-            upstream = ""
+            downstream = ""
             if hit_pos + target_seq_len + 200 < len(s.seq):
-                upstream = s.seq[hit_pos + target_seq_len + 200::]
-            records.append(MatchRecord(s.id, hit_pos, 1, str(upstream)))
+                downstream = s.seq[hit_pos + target_seq_len + 200::]
+            records.append(MatchRecord(s.id, hit_pos, 1, str(downstream)))
     print("# matches found:", len(records))
     return records                
 
@@ -132,7 +132,7 @@ def outputRecords(records, file = None, alignments = False) :
         # output matches to CSV file
         outfile = open(file,"w")
         if (alignments == False) :
-            outfile.write("ID,POSITION,STRAND,UPST LENGTH,UPSTREAM\n")
+            outfile.write("ID,POSITION,STRAND,DWNSTR LENGTH,DOWNSTREAM\n")
         else :
             outfile.write("ID,SCORE,STRAND\n")
         for r in records :
@@ -149,12 +149,9 @@ seq_dict['el312'] = "AATTGAGGTGGATCGGTGGATCGGTGGATCAGTTCATTTCGGAACTGAAATGAGCCGTG
 if len(sys.argv) == 3 :
     print("Running with provided args")
     input_filename = os.path.split(sys.argv[1])[1]
-    seqFile = os.path.split(sys.argv[2])[1]
-    output_filename = "matches-" + seqFile + "-" + input_filename + ".csv"
-    print("out = ", output_filename)
-    exit()
+    output_filename = "matches-" + input_filename + "-" + sys.argv[2] + ".csv"
     owcheck.overwriteFile(output_filename)
-    target_seq = list(SeqIO.parse(sys.argv[2], 'fasta'))[0].seq
+    target_seq = str(list(SeqIO.parse(sys.argv[2], 'fasta'))[0].seq)
     hits = getHits(target_seq, sys.argv[1])
     outputRecords(hits, output_filename, False)
     print("Your results have been saved to the following file: " + output_filename)
