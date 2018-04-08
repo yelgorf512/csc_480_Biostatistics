@@ -149,7 +149,9 @@ seq_dict['el312'] = "AATTGAGGTGGATCGGTGGATCGGTGGATCAGTTCATTTCGGAACTGAAATGAGCCGTG
 if len(sys.argv) == 3 :
     print("Running with provided args")
     input_filename = os.path.split(sys.argv[1])[1]
-    output_filename = "matches-" + input_filename + "-" + sys.argv[2] + ".csv"
+    seqFile = os.path.split(sys.argv[2])[1]
+    output_filename = "matches-" + seqFile + "-" + input_filename + ".csv"
+    print("out = ", output_filename)
     owcheck.overwriteFile(output_filename)
     target_seq = str(list(SeqIO.parse(sys.argv[2], 'fasta'))[0].seq)
     hits = getHits(target_seq, sys.argv[1])
