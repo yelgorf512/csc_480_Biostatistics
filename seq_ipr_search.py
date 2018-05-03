@@ -45,9 +45,6 @@ skip = 1
 counter = 0
 limit = -1
 
-test_protein = "MITIDGNGAVASVAFRTSEVIAIYPITPSSTMAEQADAWAGNGLKNVWGDTPRVVEMQSEAGAIATVHGALQTGALSTSFTSSQGLLLMIPTLYKLAGELTPFVLHVAARTVATHALSIFGDHSDVMAVRQTGCAMLCAANVQEAQDFALISQIATLKSRVPFIHFFDGFRTSHEINKIVPLADDTILDLMPQVEIDAHRARALNPEHPVIRGTSANPDTYFQSREATNPWYNAVYDHVEQAMNDFSAATGRQYQPFEYYGHPQAERVIILMGSAIGTCEEVVDELLTRGEKVGVLKVRLYRPFSAKHLLQALPGSVRSVAVLDRTKEPGAQAEPLYLDVMTALAEAFNNGERETLPRVIGGRYGLSSKEFGPDCVLAVFAELNAAKPKARFTVGIYDDVTNLSLPLPENTLPNSAKLEALFYGLGSDGSVSATKNNIKIIGNSTPWYAQGYFVYDSKKAGGLTVSHLRVSEQPIRSAYLISQADFVGCHQLQFIDKYQMAERLKPGGIFLLNTPYSADEVWSRLPQEVQAVLNQKKARFYVINAAKIARECGLAARINTVMQMAFFHLTQILPGDSALAELQGAIAKSYSSKGQDLVERNWQALALARESVEEVPLQPVNPHSANRPPVVSDAAPDFVKTVTAAMLAGLGDALPVSALPPDGTWPMGTTRWEKRNIAEEIPIWKEELCTQCNHCVAACPHSAIRAKVVPPEAMENAPASLHSLDVKSRDMRGQKYVLQVAPEDCTGCNLCVEVCPAKDRQNPEIKAINMMSRLEHVEEEKINYDFFLNLPEIDRSKLERIDIRTSQLITPLFEYSGACSGCGETPYIKLLTQLYGDRMLIANATGCSSIYGGNLPSTPYTTDANGRGPAWANSLFEDNAEFGLGFRLTVDQHRVRVLRLLDQFADKIPAELLTALKSDATPEVRREQVAALRQQLNDVAEAHELLRDADALVEKSIWLIGGDGWAYDIGFGGLDHVLSLTENVNILVLDTQCYSNTGGQASKATPLGAVTKFGEHGKRKARKDLGVSMMMYGHVYVAQISLGAQLNQTVKAIQEAEAYPGPSLIIAYSPCEEHGYDLALSHDQMRQLTATGFWPLYRFDPRRADEGKLPLALDSRPPSEAPEETLLHEQRFRRLNSQQPEVAEQLWKDAAADLQKRYDFLAQMAGKAEKSNTD"
-
-
 for the_line in seq_lines:
     comma_split_line = the_line.split(",")
     if counter >= skip :
@@ -59,10 +56,7 @@ for the_line in seq_lines:
             else: 
                 print('Adding sequence ' + str(counter))
                 seq_list.append(comma_split_line[4])
-            
-        #else :
-         #   seq_list.append("")
-          #  contig_list.append("")
+    
     counter += 1
     if counter == limit :
         break
@@ -82,6 +76,7 @@ for dna_seq in seq_list :
                 the_offset_seq += "N"
 
         the_protein_seq = str(Seq(the_offset_seq).translate())
+        the_protein_seq = the_protein_seq.replace("*", "") # Interpro won't take stop codons, which are *s in the protein sequence, so we get rid of them here
         frame_list.append(the_protein_seq)
 
     for frame_offset in range(0, 3) :       # get last 3 reading frames (reverse complement seq with offset 0, 1, 2)
@@ -93,7 +88,8 @@ for dna_seq in seq_list :
                 the_offset_rc_seq += "N"
 
         the_protein_seq = str(Seq(the_offset_rc_seq).translate())
-        frame_list.append(the_protein_seq)
+        the_protein_seq = the_protein_seq.replace("*", "") # Interpro won't take stop codons, which are *s in the protein sequence, so we get rid of them here
+        frame_list.append(the_protein_seq)      
 
     protein_list.append(frame_list)
 
@@ -102,7 +98,7 @@ counter = 0
 str_csv = ""    # this is the string that the CSV output file will be built in
 
 for protein_set in protein_list:
-    if (len(protein_set[0]) > 0) :
+    if (len(protein_set[0]) >= 11) :     # 11 is minimum length protein allowed by Interpro Scan
         print("HANDLING CONTIG " + str(counter + 1) + "/" + str(len(protein_list)))
         str_csv += (contig_list[counter] + ",FRAME,AC,DESC,NAME\n")
         frame_counter = 1
@@ -131,8 +127,12 @@ for protein_set in protein_list:
                     str_csv += ("," + str(frame_counter) + "," + elem.get("ac") + "," + elem.get("desc") + "," + elem.get("name") + "\n")
 
             frame_counter += 1
+    elif (len(protein_set[0]) > 0) :
+        print("PROTEIN TOO SHORT FOR ANALYSIS FOR CONTIG" + str(counter + 1) + ", skipping...")
+        str_csv += (contig_list[counter] + ",PROTEIN TOO SHORT FOR ANALYSIS\n")
     else :
         print("NO DOWNSTREAM SEQUENCE FOR CONTIG " + str(counter + 1) + ", skipping...")
+        str_csv += (contig_list[counter] + ",NO DOWNSTREAM SEQUENCE\n")
     counter += 1    
 
 outfile = open(output_filename,"w")
