@@ -1,5 +1,8 @@
 # csc_480
 
+Bioinformatics independent study project by Nick Frogley and Dr. Garrett Dancik at ECSU in 2018.
+
+Notes:
 For results numbered 1 through 4, the numbers correspond to the following original FASTA files:
 
 1:  Vi_40_41_43_assembled.fa
